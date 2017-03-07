@@ -1,6 +1,6 @@
 # Python-Django-test-works-
 Тестовое задание на фраймворке python
-[Uploading Задачи Python.docx…]()
+https://yadi.sk/i/ORO-Ix9f3FDrPQ
 
 http://smyt.ru/company/vakansii/
 skype: nataly.smyt

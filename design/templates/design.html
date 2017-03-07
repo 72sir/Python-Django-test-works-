@@ -1,0 +1,476 @@
+{% extends 'main.html' %}
+
+{% load staticfiles %}
+{% load static %}
+
+{% block index %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <h3>3. Проектирование</h3>
+                <hr>
+                <h4>Сортируем товар по цене с вычитом скидки и по условию от 1000 до 10 000:</h4>
+                <pre>
+# list массив в который передаем данные по товарам с учетом максмальной скидки
+# Сортируем массив по ценам с учетом вычита скидки
+list.sort(key=lambda x: x['skidkaPrice'])</pre>
+                {% for elem in list %}
+                    <p>Продукт: {{ elem.name.title }} |
+                        Цена товара без скидки: {{ elem.price }}
+                        {% if elem.bufSkidkaMax %}
+
+                         | Цена товара со скидкой: <b>{{ elem.skidkaPrice }}</b>
+                        | Тип скидки:
+                            {% if elem.bufSkidkaInfo == 1 %}
+                                еденица продукции
+                            {% elif elem.bufSkidkaInfo == 2 %}
+                                группа товаров
+                            {% elif elem.bufSkidkaInfo == 3 %}
+                                на бренд
+                            {% endif %}
+                            |
+                        Максимальная скидка: {{ elem.bufSkidkaMax }}
+                    {% else %}
+                         | Скидки нет, цена: <b>{{ elem.price }}</b>.
+                    {% endif %}
+                    </p>
+                {% endfor %}
+
+                <hr>
+                <h4>Скидки по пользователю:</h4>
+                <p>
+                    1. Ид выбранных товаров в виде корзины хранить у пользователя на копьютере в кеше.<br/>
+                    2. При покупке товаров еще раз обработать данные выбранных товаров с поиском максимальной скидки по ним
+                    и так же проверить имеется ли у пользователя скидка(в том случае если он зарегестрирован).
+                </p>
+                <pre>
+if request.user.is_active:
+    try:
+        searchSkidkaUser = Skidka.objects.get(user=request.user)
+        # Если нашли скидку по пользователю то далее мы можем с ней работатьи
+        # вычитать из товара или прибавить к максимальной скидке товара
+        print (u'У пользователя имеется скидка:', searchSkidkaUser.skidka)
+    except ObjectDoesNotExist:
+        print (u'Зарегеистрируйте пользователя для получения скидки.')</pre>
+
+                {% for elem in listUser %}
+                    <p>Пользователь: {{ elem.user }} | Тип скидки: по пользователю | Cкидка: {{ elem.skidka }}</p>
+                {% endfor %}
+
+                <hr>
+
+                <h4>Вся продукция:</h4>
+                <ul>
+                    {% for product in products %}
+                        <li>
+                            <p>
+                                Наименование: {{ product.name.title }} |
+                                Цена: {{ product.price }} |
+                                Предназначение: {{ product.group.name.title }} |
+                                Бренд: {{ product.brend.name.title }} |
+                                <br>
+                                {% for skidka in skidkis %}
+                                    {% if skidka.unitProduct == product %}
+                                        <br>
+                                        Скидка на <b>Еденицу товара</b>: {{ skidka.skidka }} |
+                                        Действует с: {{ skidka.inData }} |
+                                        Действует до: {{ skidka.outData }} |
+                                        Единица товара: {{ skidka.unitProduct }} |
+                                    {% endif %}
+                                    {% if skidka.group == product.group %}
+                                        <br>
+                                        Скидка на <b>Группу товаров</b>: {{ skidka.skidka }} |
+                                        Действует с: {{ skidka.inData }} |
+                                        Действует до: {{ skidka.outData }} |
+                                        Группа: {{ skidka.group }} |
+                                    {% endif %}
+                                    {% if skidka.brend == product.brend %}
+                                        <br>
+                                        Скидка на <b>Бренд</b>: {{ skidka.skidka }} |
+                                        Действует с: {{ skidka.inData }} |
+                                        Действует до: {{ skidka.outData }} |
+                                        Бренд: {{ skidka.brend }} |
+                                    {% endif %}
+
+                                {% endfor %}
+                                <br>
+                                <br>
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <h4>Всe действующие скидки:</h4>
+                <ul>
+                    {% for skidka in skidkis %}
+                        <li>
+                            <p>
+                                Скидка: {{ skidka.skidka }} |
+                                Действует с: {{ skidka.inData }} |
+                                Действует до: {{ skidka.outData }} |
+                                {% if skidka.unitProduct %}
+                                    Единица товара: {{ skidka.unitProduct }} |
+                                {% elif skidka.group %}
+                                    Группа: {{ skidka.group }} |
+                                {% elif skidka.brend %}
+                                    Бренд: {{ skidka.brend }} |
+                                {% elif skidka.user %}
+                                    Пользователь: {{ skidka.user }} |
+                                {% endif %}
+
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <h4>Не прошли по дате:</h4>
+                <ul>
+                    {% for skidka in skidkaNotDate %}
+                        <li>
+                            <p>
+                                Скидка: {{ skidka.skidka }} |
+                                Действует с: {{ skidka.inData }} |
+                                Действует до: {{ skidka.outData }} |
+                                {% if skidka.unitProduct %}
+                                    Единица товара: {{ skidka.unitProduct }} |
+                                {% elif skidka.group %}
+                                    Группа: {{ skidka.group }} |
+                                {% elif skidka.brend %}
+                                    Бренд: {{ skidka.brend }} |
+                                {% elif skidka.user %}
+                                    Пользователь: {{ skidka.user }} |
+                                {% endif %}
+
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <h4>Общий алгоритм:</h4>
+                <p>models.py</p>
+                <pre>
+# coding: utf-8
+
+from __future__ import unicode_literals
+
+from django.contrib.auth.models import User
+from django.db import models
+from django.utils import timezone
+
+# Create your models here.
+
+
+# Категория
+class Category(models.Model):
+    # Наименование
+    name = models.CharField('Item', max_length=100)
+    # Группа предназначения
+    group = models.BooleanField('Group', default=False)
+    # Бренд
+    brend = models.BooleanField('Brend', default=False)
+
+    class Meta:
+        verbose_name = u'Категория'
+        verbose_name_plural = u'Категории'
+
+    def __unicode__(self):
+        return u'%s' % self.name
+
+
+# Продукт
+class Product(models.Model):
+    # Наименование
+    name = models.CharField('Product', max_length=130)
+    # Группа предназначения
+    group = models.ForeignKey('Category', null=True, blank=True, related_name='groupProduct')
+    # Бренд
+    brend = models.ForeignKey('Category', null=True, blank=True, related_name='brendProduct')
+    # Цена
+    price = models.DecimalField('Стоимость единицы, руб.', max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name = u'Продукт'
+        verbose_name_plural = u'Продукция'
+
+    def __unicode__(self):
+        return u'%s' % self.name
+
+
+# Скидка
+# В такой группе минус что можно заенсти данные без предназначения,
+# это мы будем отслеживать в момет сохранения данных
+class Skidka(models.Model):
+    # Процент предоставляемой скидки
+    skidka = models.IntegerField(default=0)
+    # Дата с
+    inData = models.DateField(default=timezone.now(), null=False, blank=False)
+    # Дата до
+    # * по умолчанию сделаем что акция действует неделю
+    outData = models.DateField(default=timezone.now() + timezone.timedelta(days=7), null=False, blank=False)
+    # ссылка на продукт
+    unitProduct = models.ForeignKey('Product', null=True, blank=True)
+    # Группа предназначения
+    group = models.ForeignKey('Category', null=True, blank=True, related_name='groupSkidka')
+    # Бренд
+    brend = models.ForeignKey('Category', null=True, blank=True, related_name='brendSkidka')
+    # Пользователь
+    user = models.ForeignKey(User, null=True, blank=True)
+
+    class Meta:
+        verbose_name = u'Скидка'
+        verbose_name_plural = u'Скидки'
+                </pre>
+                <br>
+                <p>
+                    views.py - прходим по всем товарам и скидкам.
+                    Создавая данные в list для отображения всех товаров и максимальной скидки по нему.<br>
+                    И далее в шаблоне htlm описываем по перемеой bufSkidkaInfo что была за скидка.
+                </p>
+            <pre>
+# coding: utf-8
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
+from django.db.models import Q
+from django.shortcuts import render
+from design.models import Product, Skidka
+
+
+# Create your views here.
+
+
+def design(request):
+    # Доп информация показать скидки по пользователю
+    skidkiUser = Skidka.objects.filter(user__isnull=False)
+    # Запоминаем имеется ли скидка у пользователья
+    searchSkidkaUser = None
+
+    if request.user.is_active:
+        try:
+            searchSkidkaUser = Skidka.objects.get(user=request.user)
+            # Если нашли скидку по пользователю то далее мы можем с ней работатьи
+            # вычитать из товара или прибавить к максимальной скидке товара
+            print (u'skidka user ', searchSkidkaUser.skidka)
+        except ObjectDoesNotExist:
+            searchSkidkaUser = None
+            print (u'Skidki net')
+
+    # Фильтруем данные сразу по цене
+    productsPrice = Product.objects.filter(price__gte=1000, price__lte=10000)
+    # инфо по всем товарам для сравнения
+    products = Product.objects.all()
+    # сортируем скидки по дате
+    skidki = Skidka.objects.filter(inData__lte=timezone.now(), outData__gte=timezone.now())
+    # Передаем данные в шаблон
+    args = {
+        # вся продукция
+        'products': products,
+        # Сортируем скидки по дате
+        'skidkis': skidki,
+        # Скидки которые не вошли по дате
+        'skidkaNotDate': Skidka.objects.filter(Q(outData__lt=timezone.now()) | Q(inData__gt=timezone.now())),
+        # Запоминаем имеется ли скидка у пользователья
+        'searchSkidkaUser': searchSkidkaUser
+    }
+
+    # Создадим лист для создания данных на основе товара и максимальной скидки
+    list = []
+
+    # Перебираем весь товар
+    for product in productsPrice:
+        # Перебираем все скидки по товару
+        # запоминаем скидку что бы сравнивать в цикле for
+        bufSkidkaMax = 0
+        # Сюда заносим число выбора максимальной скидки
+        # 1 - еденицу продукции 2 -  группа товаров 3 - по брендам
+        bufSkidkaInfo = None
+        # Буфер для создания List
+        buf = {}
+        # берем 1 продукт и выясняем максимальную скидку
+        for skidka in skidki:
+            # Определяем максмальную скидку,
+            # для этого создадим лист со скидками
+            # и в нем уже сделаем выборку
+
+            # скидка на еденицу продукции
+            if skidka.unitProduct == product:
+                if bufSkidkaMax < skidka.skidka:
+                    bufSkidkaMax = skidka.skidka
+                    bufSkidkaInfo = 1
+
+            # скидкa по группе товаров
+            elif skidka.group == product.group:
+                if bufSkidkaMax < skidka.skidka:
+                    bufSkidkaMax = skidka.skidka
+                    bufSkidkaInfo = 2
+
+            # запоминаем скидку по брендам
+            elif skidka.brend == product.brend:
+                if bufSkidkaMax < skidka.skidka:
+                    bufSkidkaMax = skidka.skidka
+                    bufSkidkaInfo = 3
+
+        # Фильтруем данные с учетом скидки между 1000 и 10 000
+        skidkaPrice = product.price - int(bufSkidkaMax)
+
+        if 999 < skidkaPrice < 10001:
+            buf['skidkaPrice'] = product.price - int(bufSkidkaMax)
+            buf['bufSkidkaMax'] = bufSkidkaMax
+            buf['bufSkidkaInfo'] = bufSkidkaInfo
+            buf['name'] = product.name
+            buf['price'] = product.price
+
+            list.append(buf)
+
+    # Сортируем массив по ценам с учетом вычита скидки
+    list.sort(key=lambda x: x['skidkaPrice'])
+
+    args['list'] = list
+    args['listUser'] = skidkiUser
+
+    return render(request, 'design.html', args)</pre>
+                <p>
+                    В шаблоне htlm описываем по перемеой bufSkidkaInfo что была за скидка.
+                </p>
+            <pre>
+&#123;% for elem in list %&#125;
+    &lt;p>Наименование продукта: &#123;&#123; elem.name.title }} |
+        Цена товара: &#123;&#123; elem.price }}
+        &#123;% if elem.bufSkidkaMax %}
+        | Тип скидки:
+            &#123;% if elem.bufSkidkaInfo == 1 %}
+                еденица продукции
+            &#123;% elif elem.bufSkidkaInfo == 2 %}
+                группа товаров
+            &#123;% elif elem.bufSkidkaInfo == 3 %}
+                бренд
+            &#123;% endif %}
+            |
+        Максимальная скидка: &#123;&#123; elem.bufSkidkaMax }}
+    &#123;% else %}
+         | Скидки нет.
+    &#123;% endif %}
+    &lt;/p>
+&#123;% endfor %}
+
+
+# Показываем скидку по пользователю
+&#123;% if searchSkidkaUser %}
+    У пользователя имеется скидка на &#123;&#123; searchSkidkaUser.skidka }} руб.
+&#123;% else %}
+    &lt;h4> Скидки нет, пройдите регистрацию.ы &lt;/h4>
+&#123;% endif %}</pre>
+                <br>
+                <br>
+                <br>
+                <hr>
+
+                <h4>Джанго-приложения или пакеты python:</h4>
+                <ul>
+                <li><p>
+                    Pillow - для рабы с изображением. Лично работал с этой библиотекой, на сайте использовал
+                    изображения 2 разрешений. Если стоит задача что изображение должно само создаваться из большого
+                    разрешение в маленькое то знаю что имеется библиотека django-imagekit. Описание ее использования:<br>
+                    Все дополнительные картинки созданные с помощью imagekit сохраняются в папке caсhe,
+                    все оригиналы сохранены в отдельной папке. Создаются при первом заходе на страницу в которой
+                    используются. В любое время все картинки можно удалить без вреда для оригинала и создать заново
+                    с новыми параметрами.
+
+                </p></li>
+                <li><p>
+                    Mailchimp (+Mandrill) - интересная библиотека по отсылке новостей и создания подписчиков.
+                </p></li>
+                <li><p>
+                     django-debug-toolbar-template-timings — плагин к debug toolbar,
+                    который замеряет время рендеринга шаблонов.
+                </p></li>
+                <li><p>
+                     django-adv-cache-tag позволяет очень гибко управлять кешированием в шаблонах — версионность,
+                    сжатие, частичное кэширование.
+                </p></li>
+                <li><p>
+                     django-ipware определит ip пользователя.
+                </p></li>
+                <li><p>
+                    django-email-confirmation - Позволяет пользователю регистрировать на себя несколько email-адресов,
+                    из них выделить основной, подтверждать адреса по почте и управлять всем этим нехитрым процессом.
+                </p></li>
+                </ul>
+                <br>
+                <br>
+                <br>
+                <hr>
+                <h4>SQL (postgresql):</h4>
+                <p>1.	Надо написать запрос который на заданные телефоны возвращает количество проданных вещей.</p>
+                <pre>
+select phones.phone,  COUNT(phones.phone)
+from items, phones
+where 	items.user_id = phones.users and
+	(phones.phone = '999999996' or phones.phone = '999999999') and
+	items.status = 7
+GROUP BY phones.phone</pre>
+                <p>2. Который возвращает в одном запросе количество и проданных и непроданных.</p>
+                <pre>
+select phones.phone, items.status,  COUNT(phones.phone)
+from items, phones
+where 	items.user_id = phones.users and
+	(phones.phone = '999999996' or phones.phone = '999999999' or phones.phone = '999999995') and
+	(items.status = 7 or items.status = 3)
+GROUP BY phones.phone, items.status</pre>
+                <br>
+                <br>
+                <br>
+                <hr>
+                <h4>GIT:</h4>
+                <p>Показать команды</p>
+                <ul>
+                    <li>создание и переход на новую ветку feature_1 - <b>
+                        $ git branch feature_1<br>
+                        $ git checkout feature_1</b>
+                    </li>
+                    <li>сделать два коммита  - <br>
+                        <b>
+                        $ vim index.html<br>
+                        $ git commit -a -m 'added a new footer [feature_1]'
+                        </b>
+                        <br>
+                        <b>
+                        $ vim index.html<br>
+                        $ git commit -a -m 'finish edit footer [feature_1]'
+                        </b>
+                   </li>
+                    <li>удалить второй коммит вместе с изменениями - <b>$ git reset --hard HEAD</b></li>
+                    <li>смержить эту ветку в master - <b>$ git merge feature_1</b></li>
+                </ul>
+                <hr>
+
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-xs-12 ">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/"> <i class="fa fa-user"></i> 1.	Регулярные выражения. </a>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/requestInDjango/"> <i class="fa fa-user"></i> 2. Запросы Django </a>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'main.html' %}
+
+{% load staticfiles %}
+{% load static %}
+
+{% block index %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <h3>2. Запросы Django</h3>
+                <h4><u>
+                    а) С помощью Django ORM выбрать товары, цена которых больше или равна 100 руб.,
+                    сгруппировать по категориям и посчитать количество товаров в каждой категории.
+                </u></h4>
+                <h5> Даны модели: </h5>
+                <ul>
+                    <li>
+                        <p>
+                            <b>class Category(models.Model)</b>: <br>
+                                &nbsp;&nbsp;&nbsp;name = models.CharField(‘Группа товара’, max_length=64)
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <b>class Product(models.Model)</b>: <br>
+                            &nbsp;&nbsp;&nbsp;category = models.ForeignKey(Category, verbose_name=‘Группа’)<br>
+                            &nbsp;&nbsp;&nbsp;name = models.CharField(‘Название товара’, max_length=128)<br>
+                            &nbsp;&nbsp;&nbsp;price = models.DecimalField(‘Стоимость единицы, руб.’, max_digits=10, decimal_places=2)<br>
+                        </p>
+                    </li>
+                </ul>
+                <hr>
+                <h3>
+                    С помощью Django ORM выбрать товары, цена которых больше или равна 100 руб.,
+                    сгруппировать по категориям и посчитать количество товаров в каждой категории.<br><br>
+                </h3>
+                <h4> Вся продукция на складе:<br><br></h4>
+                <ul>
+                    {% for elem in product %}
+                        <li><p>
+                            Категория: {{ elem.category.name.title }} |
+                            Наименование: {{ elem.name.title }} |
+                            Цена: {{ elem.price }}
+                        </p></li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <p>
+                    # Выборка по цене <br>
+                    requestOne = <b>Product.objects.filter(price__gte=100).order_by('category')</b> <br><br>
+                </p>
+                <ul>
+                    {% for elem in requestOne %}
+                        <li><p>
+                            Категория: {{ elem.category.name.title }} |
+                            Наименование: {{ elem.name.title }} |
+                            Цена: {{ elem.price }}
+                        </p></li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <p>
+                    # Выводим количество по категориям <br>
+                    requestOneCount = <b>Category.objects.filter(product__price__gte=100).annotate(count=Count('product'),
+                                                                                sum=Sum('product__price'))</b> <br><br>
+                </p>
+                <ul>
+                    {% for elem in requestOneCount %}
+                        <li><p>
+                            Категория: {{ elem.name.title }} |
+                            Количество: {{ elem.count }} |
+                            Общая сумма товара: {{ elem.sum }}
+                        </p></li>
+                    {% endfor %}
+                </ul>
+
+                <hr>
+
+                <h2>Так же имеется метод:</h2>
+                <p>
+                    # По annotate не самые приятные отзывы по производительности <br>
+                    # Выводим количество по категориям след. методом <br>
+
+                    requestOneCountTwo = <b>Category.objects.filter(product__price__gte=100).prefetch_related(
+                        Prefetch('product_set', queryset=Product.objects.filter(price__gte= 100))).distinct()</b><br><br>
+
+                    list = []<br><br>
+
+                    for category in requestOneCountTwo:<br>
+                        &nbsp;&nbsp;&nbsp;products = category.product_set.all()<br>
+                        &nbsp;&nbsp;&nbsp;buf = {}<br>
+                        &nbsp;&nbsp;&nbsp;buf['name'] = category.name<br>
+                        &nbsp;&nbsp;&nbsp;buf['len'] = len(products)<br>
+                        &nbsp;&nbsp;&nbsp;list.append(buf)<br><br>
+                </p>
+                <h2>Результат:</h2><br>
+                <ul>
+                    {% for elem in buf %}
+                        <li><p>Категория: {{ elem.name.title }} | Количество: {{ elem.len }}</p></li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <h4><u>Б. То же самое, но оставить лишь категории, в которых строго больше 10 товаров</u></h4>
+                <p>
+                    Простейший метод это сортировать в шаблоне HTML при помощи оператора if
+                    <br>
+                    <br>
+                    &#060;ul> <br>
+                        &nbsp;&nbsp;&nbsp;&#123;% for elem in requestOneCount %} <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#123;% if elem.count > 10 %} <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#060;li>&#060;p> <br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Категория: &#123;&#123; elem.name.title }} | <br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Количество: &#123;&#123; elem.count }} | <br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Общая сумма товара: &#123;&#123; elem.sum }} <br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#060;/p>&#060;/li> <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#123;% endif %} <br>
+                        &nbsp;&nbsp;&nbsp;&#123;% endfor %} <br>
+                    &#060;/ul> <br>
+                </p>
+                <ul>
+                    {% for elem in requestOneCount %}
+                        {% if elem.count > 10 %}
+                            <li><p>
+                                Категория: {{ elem.name.title }} |
+                                Количество: {{ elem.count }} |
+                                Общая сумма товара: {{ elem.sum }}
+                            </p></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+
+
+                <br>
+
+                <br>
+                <br>
+
+
+                <h4><u>в) Написать код python, который выводит в консоль перечень всех товаров.
+                    Каждая строка должна содержать следующие данные:</u></h4>
+                <h4> Простой вариант :</h4>
+                <p>
+                    # 1. Создаем запрос к базе данных в которой выбраем все товары<br>
+                    productsAll = Product.objects.all()<br><br>
+                    # Убираем проблему кодировки<br>
+                    sys.setdefaultencoding(locale.getpreferredencoding())<br><br>
+
+                    for elem in productsAll:<br>
+                        &nbsp;&nbsp;&nbsp;print (u'---------------------------------------------')<br>
+                        &nbsp;&nbsp;&nbsp;print(u'1. Категория: ' + elem.category.name)<br>
+                        &nbsp;&nbsp;&nbsp;print (u'2. Наименование товара: ' + elem.name)<br>
+                        &nbsp;&nbsp;&nbsp;print (u'3. Цена товара: ' + elem.price.to_eng_string())<br>
+                </p>
+
+                <br>
+                <br>
+                <br>
+
+                <h3><b>Additional questions </b></h3>
+                <h4><u>
+                    1. Suppose we have several independent models which have some fields in common.
+                    What type of django model inheritance should be used to avoid typing those
+                    common fields definitions in each model?
+                </u></h4>
+
+                <p>
+                    <b>Abstract base classes</b> - использовал для расширения пользовательской модели User.
+                </p>
+
+                <br>
+
+                <h4><u>2. Suppose we have model with a custom manager: </u></h4>
+                <p>
+                    ii.<br>
+                    class CustomQuerySet(QuerySet):<br>
+                    &nbsp;&nbsp;&nbsp;def delete(self):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.update(active=False)<br><br>
+
+                    &nbsp;&nbsp;&nbsp;def delete_real(self):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;super(CustomQuerySet, self).delete()<br>
+
+                </p>
+                <ul>
+                    <li>.update() .delete() - стандартная функции ORM</li>
+                </ul>
+                <br>
+                <h4><u>3. Suppose we have model:</u></h4>
+                <p>
+                    iii.<br>
+                    birthday = models.DateField(null=True, blank=False)<br>
+                </p>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-xs-12 ">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/"> <i class="fa fa-user"></i> 1.	Регулярные выражения. </a>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/design/"> <i class="fa fa-user"></i> 3. Проектирование </a>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

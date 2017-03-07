@@ -1,0 +1,124 @@
+{% extends 'main.html' %}
+
+{% load staticfiles %}
+{% load static %}
+
+{% block index %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <h3>
+                    1.	Регулярные выражения.
+                </h3>
+
+                <h5> Дан пример вида: <b>'esdfd((esdf)(esdf' -> 'esdfd((esdf)'</b> </h5>
+
+                    <ul>
+                        <li>
+                            <p>Если в начале строки стоит текст, то его требуется вывести в строке.</p>
+                        </li>
+                        <li>
+                            <p>Если в строке нашлась открывающаяся скобка то требуется вывести весь текст внутри нее до закрывающейся скобки</p>
+                        </li>
+                        <li>
+                            <p>Если закрывающейся скобки не найдено то текст не выводим.</p>
+                        </li>
+                    </ul>
+
+                    <form action="/" method="post">
+                        {% csrf_token %}
+                        <!-- form.parentname.errors -->
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                    <label>Введите строку:</label>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+
+                                </div>
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <input type="text" id="id_text" name="text" class="form-control" maxlength="100" data-msg-required="" value="{{ defaultStr }}" placeholder="" required >
+                                </div>
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <label></label>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                    <label></label>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                    <button class="btn btn-success btn-lg btn-block" type="submit"> <i class="fa fa-check-circle"></i> Проверить строку </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                <h2>Ответ: {{ resultSearch }}</h2>
+                <hr>
+                <h3> Алгоритм работы регулярного выражения:<br><br></h3>
+                <h4> Вся продукция на складе:<br><br></h4>
+
+                <ul>
+                    <li><p>^[a-zA-Z]* - в начале строки может находится какое то количество букв.</p></li>
+                    <li><p>[(]*[a-zA-Z]*[)] - поиск осущетвляется между скобками каких то букв.</p></li>
+                    <li><p>([(]*[a-zA-Z]*[)])* - подобных вариантов может быть несколько.</p></li>
+                </ul>
+                <p>
+                    pattern = '^[a-zA-Z]*([(]*[a-zA-Z]*[)])*' <br><br>
+                    resultSearch = re.search(pattern, str) <br><br>
+
+                    где ^[a-zA-Z]*([(]*[a-zA-Z]*[)])* наше регулярное выражение,<br><br>
+                </p>
+
+                <ul>
+                    <li><p>^[a-zA-Z]* - в начале строки может находится какое то количество букв.</p></li>
+                    <li><p>[(]*[a-zA-Z]*[)] - поиск осущетвляется между скобками каких то букв.</p></li>
+                    <li><p>([(]*[a-zA-Z]*[)])* - подобных вариантов может быть несколько.</p></li>
+                </ul>
+                <hr>
+                <h2>Не регулярное выражение - {{ result }}</h2>
+                <h3> Алгоритм работы без регулярного выражения:<br><br></h3>
+                <p>
+                    # Без регулярного выражения<br>
+                    i = 0<br>
+                    buf = ''<br>
+                    char = ''<br>
+                    for elem in str:<br>
+                        &nbsp;&nbsp;&nbsp;if i == 0 and elem != '(':<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char = char + elem<br>
+                        &nbsp;&nbsp;&nbsp;elif elem == '(' and buf is None:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf = elem<br>
+                        &nbsp;&nbsp;&nbsp;elif elem == '(' and buf is not None:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf = buf + elem<br>
+                        &nbsp;&nbsp;&nbsp;elif elem == ')':<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char = char + buf + elem<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf = ''<br>
+                        &nbsp;&nbsp;&nbsp;else:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf = buf + elem<br>
+
+                        &nbsp;&nbsp;&nbsp;i += 1<br>
+
+                </p>
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-xs-12 ">
+                        <!-- Indicates a successful or positive action -->
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/requestInDjango/"> <i class="fa fa-user"></i> 2. Запросы Django </a>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-xs-6">
+                        <!-- Indicates a successful or positive action -->
+                        <a class="btn btn-primary btn-lg btn-block" href="/design/"> <i class="fa fa-user"></i> 3. Проектирование </a>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
